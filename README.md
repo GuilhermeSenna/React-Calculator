@@ -2,7 +2,7 @@
  
 ## Principais regras de negócio abrangidas
 
-- (Novo) Inicia com o valor zero por *default* e após apertar o botão *Clear (AC)*
+- (Novo) Inicia com o valor zero por *default* e após apertar o botão *AC*
     - Evita o crash após digitar apenas o dígito "."
 - Mantém apenas a regra padrão: OPERANDO OPERADOR OPERANDO
     - 1 + 1    
