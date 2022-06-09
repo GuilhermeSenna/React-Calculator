@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 import DigitButton from './components/DigitButton';
 import OperationButton from './components/OperationButton';
 import './styles.css';
@@ -29,9 +29,10 @@ function App() {
           }
         }
 
+
         // Doesn't allow adding more zeros if there is only one
         if (payload.digit === "0" && state.currentOperand === "0") return state
-        if (payload.digit === "." && state.currentOperand.toString().includes(".")) return state
+        if (payload.digit === "." && state.currentOperand.includes(".")) return state
         return {
           ...state,
           currentOperand: `${state.currentOperand || ""}${payload.digit}`
@@ -98,7 +99,11 @@ function App() {
           currentOperand: evaluate(state)
         }
       default:
-        return state
+        return {
+          operation: null,
+          previousOperand: null,
+          currentOperand: evaluate(0)
+        }
     }
   }
 
@@ -143,7 +148,7 @@ function App() {
   }
 
   const clearHandler = () => {
-    dispatch({ type: ACTIONS.CLEAR });
+    dispatch({ type: '' });
   }
 
   const evaluateHandler = () => {
@@ -155,6 +160,11 @@ function App() {
   }
 
   const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(reducer, {});
+
+  // Starts initial value to 0
+  useEffect(() => {
+    dispatch({ type: '' })
+  }, [])
 
   return (
     <div className="calculator-grid">
