@@ -20,9 +20,18 @@ function App() {
 
     switch (type) {
       case ACTIONS.ADD_DIGIT:
+
+        if (state.overwrite) {
+          return {
+            ...state,
+            currentOperand: payload.digit,
+            overwrite: false
+          }
+        }
+
         // Doesn't allow adding more zeros if there is only one
         if (payload.digit === "0" && state.currentOperand === "0") return state
-        if (payload.digit === "." && state.currentOperand.includes(".")) return state
+        if (payload.digit === "." && state.currentOperand.toString().includes(".")) return state
         return {
           ...state,
           currentOperand: `${state.currentOperand || ""}${payload.digit}`
@@ -57,6 +66,37 @@ function App() {
         }
       case ACTIONS.CLEAR:
         return {};
+      case ACTIONS.DELETE_DIGIT:
+        if (state.overwrite) {
+          return {
+            ...state,
+            overwrite: false,
+            currentOperand: null
+          }
+        }
+
+        if (state.currentOperand == null) return state
+        if (state.currentOperand.length === 1) {
+          return { ...state, currentOperand: null }
+        }
+
+        // Remove the last digit
+        return {
+
+
+          currentOperand: state.currentOperand.slice(0, -1)
+        }
+      case ACTIONS.EVALUATE:
+        if (state.operation == null || state.currentOperand == null || state.previousOperand == null) return state
+
+        // After the evaluation is finished, the new value will overwrite the remaining
+        return {
+          ...state,
+          overwrite: true,
+          previousOperand: null,
+          operation: null,
+          currentOperand: evaluate(state)
+        }
       default:
         return state
     }
@@ -90,6 +130,18 @@ function App() {
     return computation.toString();
   }
 
+  const INTEGER_FORMATTER = new Intl.NumberFormat("en-us", {
+    maximumFractionDigits: 0,
+  });
+
+  const formatOperand = (operand) => {
+    if (operand == null) return
+    const [integer, decimal] = operand.split('.')
+    if (decimal == null) return INTEGER_FORMATTER.format(integer);
+
+    return `${INTEGER_FORMATTER.format(integer)}.${decimal}`
+  }
+
   const clearHandler = () => {
     dispatch({ type: ACTIONS.CLEAR });
   }
@@ -98,16 +150,20 @@ function App() {
     dispatch({ type: ACTIONS.EVALUATE });
   }
 
+  const deleteHandler = () => {
+    dispatch({ type: ACTIONS.DELETE_DIGIT });
+  }
+
   const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(reducer, {});
 
   return (
     <div className="calculator-grid">
       <div className="output">
-        <div className="previous-operand">{previousOperand} {operation}</div>
-        <div className="current-operand">{currentOperand}</div>
+        <div className="previous-operand">{formatOperand(previousOperand)} {operation}</div>
+        <div className="current-operand">{formatOperand(currentOperand)}</div>
       </div>
       <button className="span-two" onClick={clearHandler}>AC</button>
-      <button>DEL</button>
+      <button onClick={deleteHandler}>DEL</button>
       <OperationButton operation="/" dispatch={dispatch} />
       <DigitButton digit="1" dispatch={dispatch} />
       <DigitButton digit="2" dispatch={dispatch} />
