@@ -6,7 +6,7 @@ import './styles.css';
 export const ACTIONS = {
   ADD_DIGIT: 'add-digit',
   CHOOSE_OPERATION: 'choose-operation',
-  CLEAR: 'clear',
+  // CLEAR: 'clear',
   DELETE_DIGIT: 'delete-digit',
   EVALUATE: 'evaluate'
 }
@@ -65,8 +65,6 @@ function App() {
           operation: payload.operation,
           currentOperand: null
         }
-      case ACTIONS.CLEAR:
-        return {};
       case ACTIONS.DELETE_DIGIT:
         if (state.overwrite) {
           return {
@@ -77,14 +75,14 @@ function App() {
         }
 
         if (state.currentOperand == null) return state
+
+        // With only one value on the stack
         if (state.currentOperand.length === 1) {
           return { ...state, currentOperand: null }
         }
 
         // Remove the last digit
         return {
-
-
           currentOperand: state.currentOperand.slice(0, -1)
         }
       case ACTIONS.EVALUATE:
@@ -98,6 +96,8 @@ function App() {
           operation: null,
           currentOperand: evaluate(state)
         }
+
+      // Starts with 0
       default:
         return {
           operation: null,
@@ -107,6 +107,7 @@ function App() {
     }
   }
 
+  // Function that returns the result
   const evaluate = ({ currentOperand, previousOperand, operation }) => {
     const prev = parseFloat(previousOperand);
     const current = parseFloat(currentOperand);
@@ -135,10 +136,12 @@ function App() {
     return computation.toString();
   }
 
+  // Add comma for decimal separation
   const INTEGER_FORMATTER = new Intl.NumberFormat("en-us", {
     maximumFractionDigits: 0,
   });
 
+  // Logic for decimal separation and floating point
   const formatOperand = (operand) => {
     if (operand == null) return
     const [integer, decimal] = operand.split('.')
@@ -161,7 +164,7 @@ function App() {
 
   const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(reducer, {});
 
-  // Starts initial value to 0
+  // Starts initial value with 0
   useEffect(() => {
     dispatch({ type: '' })
   }, [])
