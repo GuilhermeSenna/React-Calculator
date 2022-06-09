@@ -1,3 +1,4 @@
+import React from 'react';
 import { ACTIONS } from "../App"
 
 const DigitButton = ({ dispatch, digit }) => {
