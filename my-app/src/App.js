@@ -16,22 +16,89 @@ function App() {
   // state, action
   const reducer = (state, { type, payload }) => {
 
-    console.log(state)
+    // console.log(payload)
 
     switch (type) {
       case ACTIONS.ADD_DIGIT:
+        // Doesn't allow adding more zeros if there is only one
+        if (payload.digit === "0" && state.currentOperand === "0") return state
+        if (payload.digit === "." && state.currentOperand.includes(".")) return state
         return {
           ...state,
           currentOperand: `${state.currentOperand || ""}${payload.digit}`
         }
+      case ACTIONS.CHOOSE_OPERATION:
+        if (state.currentOperand == null && state.previousOperand == null) {
+          return state;
+        }
+
+        // Allows to change the operator without cleaning the display
+        if (state.currentOperand == null) {
+          return {
+            ...state,
+            operation: payload.operation
+          }
+        }
+
+        if (state.previousOperand == null) {
+          return {
+            ...state,
+            operation: payload.operation,
+            previousOperand: state.currentOperand,
+            currentOperand: null
+          }
+        }
+
+        return {
+          ...state,
+          previousOperand: evaluate(state),
+          operation: payload.operation,
+          currentOperand: null
+        }
+      case ACTIONS.CLEAR:
+        return {};
       default:
-        return null
+        return state
     }
   }
 
-  const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(reducer, {});
+  const evaluate = ({ currentOperand, previousOperand, operation }) => {
+    const prev = parseFloat(previousOperand);
+    const current = parseFloat(currentOperand);
 
-  console.log(currentOperand)
+    if (isNaN(prev) || isNaN(current)) return "";
+
+    let computation = ""
+
+    switch (operation) {
+      case "+":
+        computation = prev + current
+        break
+      case "-":
+        computation = prev - current
+        break
+      case "*":
+        computation = prev * current
+        break
+      case "/":
+        computation = prev / current
+        break
+      default:
+        return "";
+    }
+
+    return computation.toString();
+  }
+
+  const clearHandler = () => {
+    dispatch({ type: ACTIONS.CLEAR });
+  }
+
+  const evaluateHandler = () => {
+    dispatch({ type: ACTIONS.EVALUATE });
+  }
+
+  const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(reducer, {});
 
   return (
     <div className="calculator-grid">
@@ -39,7 +106,7 @@ function App() {
         <div className="previous-operand">{previousOperand} {operation}</div>
         <div className="current-operand">{currentOperand}</div>
       </div>
-      <button className="span-two">AC</button>
+      <button className="span-two" onClick={clearHandler}>AC</button>
       <button>DEL</button>
       <OperationButton operation="/" dispatch={dispatch} />
       <DigitButton digit="1" dispatch={dispatch} />
@@ -56,7 +123,7 @@ function App() {
       <OperationButton operation="-" dispatch={dispatch} />
       <DigitButton digit="." dispatch={dispatch} />
       <DigitButton digit="0" dispatch={dispatch} />
-      <button className="span-two">=</button>
+      <button className="span-two" onClick={evaluateHandler}>=</button>
     </div>
   );
 }
