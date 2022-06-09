@@ -1,4 +1,6 @@
 # React-Calculator
+
+![Calculadora preview](/calculadora.png)
  
 ## Principais regras de negócio abrangidas
 
